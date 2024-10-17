@@ -35,7 +35,7 @@ class FTPClient:
         """
         self.ftp = ftplib.FTP(ftp_server, user=user, passwd=passwd, timeout=timeout)
 
-       def check_path(path: str, detailed: bool = False) -> str | dict:
+   def check_path(path: str, detailed: bool = False) -> str | dict:
         """
         Check if a path on the FTP server is a file or directory, and optionally return more details.
     
