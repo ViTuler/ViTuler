@@ -35,36 +35,46 @@ class FTPClient:
         """
         self.ftp = ftplib.FTP(ftp_server, user=user, passwd=passwd, timeout=timeout)
 
-    def check_path(self, path: str) -> str:
+       def check_path(path: str, detailed: bool = False) -> str | dict:
         """
-        Check if a path on the FTP server is a file or directory.
-
-        This method attempts to determine whether the given path corresponds to
-        a file or a directory on the FTP server. It first tries to change into the directory.
-        If unsuccessful, it checks if the path corresponds to a file.
-
+        Check if a path on the FTP server is a file or directory, and optionally return more details.
+    
         Parameters:
         path (str): The path on the FTP server to check.
-
+        detailed (bool, optional): If True, returns additional details like path type and size. Defaults to False.
+    
         Returns:
-        str: 'folder' if the path is a directory, 'file' if it's a file, or 'path does not exist' if neither.
-
+        str: 
+            - 'folder' if the path is a directory.
+            - 'file' if the path is a file.
+            - 'path does not exist' if the path is invalid.
+        dict: 
+            If `detailed` is True, returns a dictionary with additional details:
+            - 'type': Either 'folder' or 'file'.
+            - 'size': The size of the file (if it is a file, not applicable for directories).
+        
         Raises:
         ftplib.error_perm: If an error occurs during the FTP command.
         """
         try:
+            # Check if the path is a folder
             self.ftp.cwd(path)
+            if detailed:
+                return {'type': 'folder'}
             return 'folder'
         except ftplib.error_perm as e:
             if str(e).startswith('550'):
-                # Path might be a file, check if we can get its size.
                 try:
-                    self.ftp.size(path)
+                    # Check if it's a file by getting its size
+                    size = self.ftp.size(path)
+                    if detailed:
+                        return {'type': 'file', 'size': size}
                     return 'file'
                 except ftplib.error_perm:
                     return 'path does not exist'
         except Exception as e:
             return f'error occurred: {str(e)}'
+
 
     def close(self):
         """
